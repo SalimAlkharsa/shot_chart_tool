@@ -8,26 +8,11 @@ from nba_api.stats.static import players
 import requests
 import json
 import time
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.model_selection import cross_val_score
-import statistics as s
 import math as m
-
-#Loading basic info
-#Team info
-nba_teams = teams.get_teams()
-Team = [team for team in nba_teams if team['abbreviation'] == 'BOS'][0]
-TeamID = 0
-#TeamID = Team['id'] #Comment this line out if you want to only use player data
-
-#Player info
-nba_players = players.get_players()
-Player = [player for player in nba_players
-                   if player['full_name'] == 'Stephen Curry'][0]
-PlayerID = Player['id'] 
-#PlayerID = 0 #Keep this line in if you want to only use overall data
-
+'''
+This file is used to scrape all the data related to shot charts from the NBA Website with the goal of
+organizing it for use
+'''
 
 #Functions used in the program
 def ScrapeData(TeamID, PlayerID, LastNGames, Season):
@@ -142,15 +127,15 @@ def ShotTime(df):
     
     return df
 
-def CleanData():
+def CleanData(TeamID, PlayerID, LastNGames, Season):
     #Loading the data and doing it as wanted
-    df = ScrapeData(TeamID, PlayerID, LastNGames = 1, Season = '2021-22') #Here you can control what data is scraped
+    df = ScrapeData(TeamID, PlayerID, LastNGames, Season) #Here you can control what data is scraped
     Cols = df.columns.values.tolist()
     
     #Apply functions 
-    #df = ShotTime(df) 
-    #df = ShotAngleAdv(df)
-    #df = IntegratingPlayerInfo(df)
+    df = ShotTime(df) 
+    df = ShotAngleAdv(df)
+    df = IntegratingPlayerInfo(df)
     #Removing Unwanted
     '''
     Cols = df.columns.values.tolist()
@@ -388,64 +373,3 @@ def IdenticalID(df): #Func not in use
         else: 
             continue
     return UniqueID
-    
-def ApplyModel(df):
-    #The Machine Learning Section
-    #Labelling the Train DF
-    Cols = df.columns.values.tolist()
-    Trainx = df
-    Trainy = df[Cols[5]].tolist()
-    ToDrop = [Cols[5]]
-    Trainx = df.drop(ToDrop, axis = 1)
-    #Building the model
-    model = RandomForestClassifier()
-    model.fit(Trainx, Trainy)
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-    n_scores = cross_val_score(model, Trainx, Trainy, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
-    # report performance
-    print('Accuracy: %.3f (%.3f)' % (np.mean(n_scores), np.std(n_scores)))
-    return model
-
-def TestingFunc(model):
-    #Testing the Model
-    df = ScrapeData(TeamID, PlayerID, LastNGames = 0, Season = '2019-20')
-    Cols = df.columns.values.tolist()
-    
-    #Apply functions 
-    df = ShotTime(df, Cols) 
-    
-    #Removing Unwanted
-    Cols = df.columns.values.tolist()
-    '''
-    ToDrop = [Cols[0], Cols[1],Cols[2],Cols[3],Cols[4],Cols[5],Cols[6],
-              Cols[7], Cols[10],Cols[11],Cols[12],Cols[13],Cols[14], Cols[15],
-              Cols[19],Cols[21],Cols[22], Cols[23]] #A list of columns I dont want
-    df = df.drop(ToDrop, axis = 1)
-    '''
-    
-    #The Machine Learning Section
-    #Labelling the Train DF
-    
-    Cols = df.columns.values.tolist()
-    Testx = df
-    Testy = df[Cols[5]].tolist()
-    
-    ToDrop = [Cols[5]]
-    Testx = df.drop(ToDrop, axis = 1)
-    
-    yhat = model.predict(Testx)
-    
-    Error = []
-    
-    for i in range(len(Testy)):
-        error = yhat[i]-Testy[i]
-        sq = error*error
-        root = sq**(0.5)
-        Error.append(root)
-        
-    print("Mean: ",s.mean(Error),"SD: ",s.pstdev(Error))
-    
-    
-df = CleanData()
-df.to_csv("PlayerData.csv")
-#Cols = df.columns.values.tolist()
