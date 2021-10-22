@@ -15,7 +15,7 @@ import statistics as s
 import math as m
 
 #Import of Other Files
-from Scrape-CleanShotData.py import CleanData as SCD
+from Scrape_CleanShotData import CleanData 
 
 def GetData():
     #Loading basic info by getting user input
