@@ -3,7 +3,6 @@ datetime
 numpy
 nba_api
 requests
-time
 sklearn
 statistics
 math
