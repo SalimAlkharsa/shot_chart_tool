@@ -5,4 +5,3 @@ nba_api
 requests
 sklearn
 statistics
-math
