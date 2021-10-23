@@ -1,1 +1,10 @@
-
+pandas
+datetime
+numpy
+nba_api
+requests
+json
+time
+sklearn
+statistics
+math
