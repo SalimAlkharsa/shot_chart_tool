@@ -1,7 +1,0 @@
-pandas
-datetime
-numpy
-nba_api
-requests
-sklearn
-statistics
